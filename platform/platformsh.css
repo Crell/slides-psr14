@@ -306,6 +306,14 @@ div.layout-col.vcentered {
   align-items: center;
 }
 
+.reveal .layout-stacked {
+  /* When using this layout, you must specify an explicit height on the element or it will have no meaningful effect. */
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}
+
 .reveal .layout-fixed-grid {
   display: grid;
   /* This is a default, intended to be overwritten by a style attribute. */
