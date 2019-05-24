@@ -43,6 +43,7 @@
       <h2>A Major Event in PHP</h2>
     </section>
     <section>
+      <h2><a href="https://twitter.com/Crell">@Crell</a></h2>
       <div class="layout-col vcentered">
         <img src="assets/larry-olaf-hug.jpg" alt="Larry implements Huggable" style="width: 350px; margin: 0" />
         <ul style="text-wrap: none">
@@ -55,7 +56,9 @@
     <section>
       <section>
         <p class="oversize">What's an Event?</p>
-        <p class="oversize fragment"><q>A thing that happens</q></p>
+        <aside class="fragment">
+          <blockquote>something that happens</blockquote>
+          <cite><a href="https://www.merriam-webster.com/dictionary/event">Merriam-Webster</a></cite></aside>
         <aside class="notes">
           <ul>
             <li>Not helpful</li>
@@ -79,6 +82,7 @@
         </aside>
       </section>
       <section>
+        <h2>Problem space</h2>
         <p class="oversize">Component A wants to act when Component B acts</p>
         <div class="layout-col equal-width">
           <div>
@@ -108,7 +112,7 @@
         <h2>Symfony/EventDispatcher</h2>
         <pre><code class="php" data-trim data-noescape data-line-numbers>
           $listener = new PayforPizza();
-          $dispatcher->addListener('crell.paypizza', [$listener, 'onPizzaArrived']);
+          $dispatcher->addListener('pizza.arrived', [$listener, 'onPizzaArrived']);
 
           // ...
 
@@ -132,18 +136,33 @@
         <h2>League/Event</h2>
         <pre><code class="php" data-trim data-noescape data-line-numbers>
           $event = $emitter->emit('pizza.arrived');
+
           // or
+
           $pizzaHere = new class implements EventInterface { ... }
-          $pizzahere = $emitter->emit($pizzaHere);
+          $pizzaHere = $emitter->emit($pizzaHere);
           if ($pizzaHere->wasAnchovies()) {
             throw new UpException();
           }
+
+          // or
+
+          $events = $emitter->emitBatch([$pizza, $pizza]);
         </code></pre>
       </section>
       <section>
         <h2>Zend Framework</h2>
         <pre><code class="php" data-trim data-noescape data-line-numbers>
+          $eventManager->triggerEvent(new PizzaArrivedEvent());
 
+          // or
+
+          $eventmanager->triggerEventUntil(function ($returnValue) {
+              if ($returnValue instanceof Payment && $returnValue->paymentReceived()) {
+                  return true;
+              }
+              return false;
+          }, new PizzaArrivedEvent());
         </code></pre>
       </section>
       <section>
@@ -178,12 +197,15 @@
           <ul>
             <li>All of these are solving the same problem</li>
             <li>All in the same conceptual way</li>
+            <li>Incompatible. Do Listeners return? Modify Event? Is there an object?</li>
           </ul>
         </aside>
       </section>
       <section>
-        <p class="oversizel"><q>So which do I use?</q></p>
-        <h2 class="fragment">¯\_(ツ)_/¯</h2>
+        <div class="layout-stacked" style="height: 650px;">
+          <p class="oversize"><q>So which do I use?</q></p>
+          <h2 class="fragment">¯\_(ツ)_/¯</h2>
+        </div>
         <aside class="notes">
           <ul>
             <li>As a library author how do I make my library extensible?</li>
@@ -233,9 +255,9 @@
           <li><a href="https://twitter.com/Crell"><img src="assets/working-group/larry.jpg" alt="Larry Garfield" /></a><br />Larry Garfield<br />(Editor)</li>
           <li><a href="https://twitter.com/WyriHaximus"><img src="assets/working-group/cees-jan.jpg" alt="Cees-Jan Kiewiet" /></a><br />Cees-Jan Kiewiet<br />(Sponsor)</li>
           <li><a href="https://twitter.com/auroraeosrose"><img src="assets/working-group/liz.jpg" alt="Elizabeth Smith" /></a><br />Elizabeth Smith</li>
-          <li><a href="https://twitter.com/mwop"><img src="assets/working-group/matthew.png" alt="Matthew Weier O'Phinney" /></a><br />Matthew Weier O'Phinney</li>
+          <li><a href="https://twitter.com/mwop"><img src="assets/working-group/matthew.jpg" alt="Matthew Weier O'Phinney" /></a><br />Matthew Weier O'Phinney</li>
           <li><a href="https://twitter.com/weaverryan"><img src="assets/working-group/ryan.jpg" alt="Ryan Weaver" /></a><br />Ryan Weaver</li>
-          <li><a href="https://twitter.com/"><img src="assets/working-group/benni.jpg" alt="Benni Mack" /></a><br />Benni Mack</li>
+          <li><a href="https://twitter.com/"><img src="assets/working-group/benni.png" alt="Benni Mack" /></a><br />Benni Mack</li>
         </ul>
       </section>
       <section>
@@ -260,7 +282,454 @@
         </div>
       </section>
     </section>
+    <section>
+      <section>
+        <h2>So what's it supposed to do?</h2>
+      </section>
+      <section>
+        <h2>Use cases</h2>
+        <ol>
+          <li class="fragment">Notification: <q>I did a thing! If you care...</q></li>
+          <li class="fragment">Enhancement: <q>Please change this thing before I use it.</q></li>
+          <li class="fragment">Collection: <q>Give me all your things!</q></li>
+          <li class="fragment">Alternative chain: <q>First to use it wins</q></li>
+        </ol>
+        <aside class="notes">
+          <ul>
+            <li>Notification: Traditional observer</li>
+            <li>Enhancement: Data layer pre-save</li>
+            <li>Collection: Plugin registration</li>
+            <li>Chain: Symfony View kernel event</li>
+          </ul>
+        </aside>
+      </section>
+      <section>
+        <h2>Design principles</h2>
+        <ul>
+          <li class="fragment">The Type system is your friend</li>
+          <li class="fragment">Composability is your friend</li>
+          <li class="fragment">Standardize as little as possible but no less than that</li>
+        </ul>
+      </section>
+      <section>
+        <h2>The spec</h2>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          interface EventDispatcherInterface {
+              /**
+               * @return object
+               *   The Event that was passed, now modified by listeners.
+               */
+              public function dispatch(object $event);
+          }
 
+          interface ListenerProviderInterface {
+              public function getListenersForEvent(object $event) : iterable;
+          }
+
+          interface StoppableEventInterface {
+              public function isPropagationStopped() : bool;
+          }
+        </code></pre>
+        <aside class="notes">
+          <ul>
+            <li>Just 3 methods! Sign of a good design.</li>
+            <li>dispatch() return is not typed for BC.</li>
+            <li>No event interface!</li>
+          </ul>
+        </aside>
+      </section>
+      <section>
+        <h2>Usage (Library author)</h2>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          $provider = new Provider();
+          // ...
+
+          $dispatcher = new Dispatcher($provider);
+
+          $pizzaArrived = $dispatcher->dispatch(new PizzaArrived());
+        </code></pre>
+        <ul>
+          <li class="fragment">Provider: Map Events to Listeners</li>
+          <li class="fragment">Dispatcher: Call Listeners</li>
+        </ul>
+        <aside class="notes">
+          <ul>
+            <li>dispatch() MUST return the same Event object</li>
+            <li>Provider maps event to listeners</li>
+            <li>Dispatcher calls listeners</li>
+            <li>Separation of Concerns!</li>
+          </ul>
+        </aside>
+      </section>
+    </section>
+    <section>
+      <section>
+        <h2>Basic Dispatcher</h2>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          class Dispatcher implements DispatcherInterface {
+            // Constructor goes here.
+
+            public function dispatch(object $event) {
+              foreach ($this->provider->getListenersForEvent($event) as $listener) {
+                if ($event instanceof StoppableEventInterface
+                  && $event->isPropagationStopped()) {
+                    break;
+                }
+                $listener($event);
+              }
+              return $event;
+            }
+          }
+        </code></pre>
+        <aside class="notes">
+          <ul>
+            <li>Most dispatchers like this, plus logging</li>
+            <li>Supports any provider or event</li>
+            <li>Exceptions must propagate (can be logged)</li>
+            <li>Stoppable events relevant to dispatcher. Opt-in.</li>
+          </ul>
+        </aside>
+        <p class="fragment">("Unstoppable Events" is my new band name...)</p>
+      </section>
+      <section>
+        <p class="oversize">Dispatchers are the API to calling libraries</p>
+        <p class="oversize fragment">Providers are the API to frameworks</p>
+      </section>
+      <section>
+        <h2>Providers</h2>
+        <p>Can map an Event to a Listener based on...</p>
+        <ul>
+          <li class="fragment">its class/interface type</li>
+          <li class="fragment">metadata</li>
+          <li class="fragment">permissions</li>
+          <li class="fragment">day of the week</li>
+        </ul>
+        <p class="fragment">Can order Listeners based on...</p>
+        <ul>
+          <li class="fragment">Explicit priority</li>
+          <li class="fragment">Before/after ordering</li>
+          <li class="fragment">Random</li>
+        </ul>
+        <p class="fragment">"Listener" is any PHP <code>callable</code></p>
+        <aside class="notes">
+          <ul>
+            <li>Class/interface most common</li>
+            <li>Built-in "grouping" based on interface!</li>
+          </ul>
+        </aside>
+      </section>
+      <section>
+        <div class="layout-stacked" style="height: 650px;">
+          <p class="oversize"><q>So how do Listeners get into the Provider?</q></p>
+          <h2 class="fragment">¯\_(ツ)_/¯</h2>
+        </div>
+        <aside class="notes">
+          <ul>
+            <li>Explicit</li>
+            <li>Reflection</li>
+            <li>Priority and ordering?</li>
+            <li>Services / subscribers</li>
+            <li>Compiled, like a container</li>
+            <li>Various contexts</li>
+          </ul>
+        </aside>
+      </section>
+    </section>
+    <section>
+      <section>
+        <h2>Crell/Tukio</h2>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          $provider = new OrderedListenerProvider();
+
+          // Any order.
+          $provider->addListener(function(PizzaArrived $event) {
+            log($event->hasAnchovies());
+          });
+
+          // Priority ordering.
+          $key = $provider->addListener([$listener, 'pizzaHere'], 5);
+
+          // Relative ordering.
+          $provider->addListenerBefore($key, 'my_listener_function');
+       </code></pre>
+      </section>
+      <section>
+        <h2>Crell/Tukio</h2>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          $provider = new OrderedListenerProvider($psr11Container);
+
+          $provider->addListenerService(
+            'service_name', 'handlePizza', PizzaArrived::class, 5
+          );
+
+          // (Also before/after support)
+        </code></pre>
+      </section>
+      <section>
+        <h2>Crell/Tukio</h2>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          class MySubscriber implements SubscriberInterface {
+
+            // This method will become a Listener for PizzaArrived.
+            public function onPizzaArrived(PizzaArrived $event) : void { /* ... */}
+
+            // This method is registered explicitly below.
+            public function ifPizzaLate(PizzaArrivedLate $event) : void { /* ... */}
+
+            public static function registerListeners(ListenerProxy $proxy): void
+            {
+                // Give this Listener a higher-than-default priority.
+                $a = $proxy->addListener('ifPizzaLate', 10);
+            }
+          }
+        </code></pre>
+        <p class="fragment">(Most of this gets setup in your Container config.)</p>
+      </section>
+      <section>
+        <h2>Crell/Tukio</h2>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          $builder = new ProviderBuilder();
+          $builder->addSubscriberService(PizzaSubscriber::class, 'pizza_subscriber');
+          // ...
+
+          $compiler = new ProviderCompiler();
+
+          // Write the generated compiler out to a file.
+          $filename = '/path/to/compiled/code/provider.php';
+          $out = fopen($filename, 'w');
+
+          $compiler->compile($builder, $out, 'CompiledProvider', 'My\\App');
+
+          fclose($out);
+        </code></pre>
+        <pre class="fragment"><code class="php" data-trim data-noescape data-line-numbers>
+          include($filename); // Or autoload it.
+
+          $provider = new My\App\CompiledProvider($container);
+
+          $dispatcher = new WhateverDispatcher($provider);
+        </code></pre>
+        <aside class="notes">
+          <ul>
+            <li>All ordering is pre-handled for speed.</li>
+            <li>Great for compile-container environments.</li>
+          </ul>
+        </aside>
+      </section>
+      <section>
+        <h2>bmack/kart-composer-plugin</h2>
+        <p><code>composer.json</code></p>
+        <pre><code class="json" data-trim data-noescape data-line-numbers>
+          {
+              "extra": {
+                  "psr-14": {
+                      "default": "src/Listeners"
+                  }
+              }
+          }
+        </code></pre>
+        <p><code>setup.php</code></p>
+        <pre><code class="php" data-trim data-noescape>
+          $provider = new Bmack\KartComposerPlugin\ComposerReflectionListenerProvider();
+        </code></pre>
+       <p>Any method on a class in that directory is now a Listener.<br />You're welcome.</p>
+      </section>
+      <section>
+        <p class="oversize">Or write your own</p>
+        <p class="oversize fragment">Or use your framework's</p>
+        <ul class="fragment">
+          <li>Symfony 4.3</li>
+          <li>Laminas (Zend Framework)</li>
+          <li>Yii 3.0</li>
+          <li>TYPO3</li>
+        </ul>
+        <p class="fragment">(If yours isn't here, feature request time!)</p>
+      </section>
+    </section>
+    <section>
+      <section>
+        <h2>Bidirectional communication</h2>
+        <ul>
+          <li class="fragment">Events MAY be mutable, or not, your choice</li>
+          <li class="fragment">Modify to pass back data</li>
+          <li class="fragment">Events are your domain model!</li>
+        </ul>
+      </section>
+      <section>
+        <h2>Access control</h2>
+        <p>Access permitted iff...</p>
+        <ul>
+          <li class="fragment"><=1 Listener says Allow</li>
+          <li class="fragment">0 Listeners say Deny</li>
+          <li class="fragment">Listers can say "don't care"</li>
+        </ul>
+      </section>
+      <section>
+        <h3>The Event</h3>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          class AccessCheck implements StoppableEventInterface {
+             protected $doc;
+             protected $allow = null;
+
+             public function __construct(Document $doc) { $this->doc = $doc; }
+             public function document() : Document { return $this->doc; }
+
+             public function allow() : void { $this->allow = true; }
+             public function deny() : void { $this->allow = false; }
+             public function allowed() : bool { return $this->allow === true; }
+
+             public function isPropagationStopped() : bool {
+              return $this->allow === false;
+            }
+          }
+        </code></pre>
+      </section>
+      <section>
+        <h2>The Event</h2>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          class CreateAccessCheck extends AccessCheck {}
+          class ReadAccessCheck extends AccessCheck {}
+          class UpdateAccessCheck extends AccessCheck {}
+          class DeleteAccessCheck extends AccessCheck {}
+        </code></pre>
+      </section>
+      <section>
+        <h3>The Listeners</h3>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          $provider = new OrderedListenerProvider();
+          $dispatcher = new Dispatcher($provider);
+          $user = get_current_user_somehow();
+
+          $provider->addListener(function (AccessCheck $event) use ($user) {
+             if ($user->isGuest()) {
+                 $event->deny();
+             }
+          });
+          // Note specific class.
+          $provider->addListener(function (UpdateAccessCheck $event) use ($user) {
+             $isOwnDocument = $event->document()->owner() == $user->id();
+             if ($isOwnDocument && $user->hasPermission('edit own documents')) {
+                 $event->allow();
+             }
+          });
+        </code></pre>
+        <aside class="notes">
+          <ul>
+            <li>Guest users get explict-denied, no need to do more.</li>
+            <li>For update only, allow if owner-edit.</li>
+            <li>Note first is for all access checks, second is only for updates.</li>
+            <li>Update checks call both. Create only calls the first.</li>
+          </ul>
+        </aside>
+      </section>
+      <section>
+        <h3>The Listeners</h3>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          $allow = $dispatcher->dispatch(new UpdateAccessCheck($document))->allowed();
+          if (!$allow) {
+             // Show an error message or something.
+          }
+        </code></pre>
+        <p class="fragment"><code>AccessCheck</code> <em>is</em> the API!</p>
+        <p class="fragment">Works with <em>any</em> Dispatcher or Provider!</p>
+        <aside class="notes">
+          <ul>
+            <li>Lib author can "throw over the fence" to framework.</li>
+            <li>Logic changes encapsulated to the Event class only. SRP.</li>
+            <li>StoppableEvent means stops if, only if, hit known end case.</li>
+            <li>Cannot stop before fulfilled, so can't end in incomplete state.</li>
+          </ul>
+        </aside>
+      </section>
+      <section>
+        <h3>Custom Providers</h3>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          class AccessCheckerProvider implements ListenerProviderInterface {
+
+             public function addVoter(callable $voter, bool $canDeny = false) { ... }
+
+             public function getListenersForEvent(object $event) : iterable { ... }
+          }
+        </code></pre>
+        <p class="fragment"><q>Does that mean I need multiple dispatchers?</q></p>
+        <aside class="notes">
+          <ul>
+            <li>Purpose-built API</li>
+            <li>Order deny checks first for speed, otherwise irrelevant</li>
+            <li>How do I mix it with other Providers?</li>
+          </ul>
+        </aside>
+      </section>
+    </section>
+    <section>
+      <section>
+        <h3>Aggregate Providers</h3>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          class AggregateProvider implements ListenerProviderInterface {
+            // ...
+
+            public function addProvider(ListenerProviderInterface $p) : void {
+              $this->providers[] = $provider;
+            }
+
+            public function getListenersForEvent(object $event): iterable {
+              foreach ($this->providers as $provider) {
+                  yield from $provider->getListenersForEvent($event);
+              }
+            }
+          }
+        </code></pre>
+        <p class="fragment">Provider concatenation</p>
+        <p class="fragment"><a href="https://github.com/php-fig/event-dispatcher-util">fig/event-dispatcher-util</a></p>
+      </section>
+      <section>
+        <h3>Delegating Providers</h3>
+        <!-- @todo This is too long, but need to fix the font control first -->
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          class DelegatingProvider implements ListenerProviderInterface {
+            protected $providers = [
+              PizzaArrived::class => [$provider1, $provider2],
+              TacosArrived::class => [$provider3, $provider4],
+              AccessCheck::class => [$accessCheckProvider],
+            ];
+            // ...
+            public function getListenersForEvent(object $event): iterable {
+              foreach ($this->providers as $type => $providers) {
+                if ($event instanceof $type) {
+                  foreach ($providers as $provider) {
+                    yield from $provider->getListenersForEvent($event);
+                  }
+                  return;
+                }
+              }
+              yield from $this->defaultProvider->getListenersForEvent($event);
+            }
+          }
+        </code></pre>
+        <p class="fragment">Provider branching</p>
+      </section>
+      <section>
+        <h3>Mix and match</h3>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          $compiledProvider = new MyCompiledProvider();
+
+          $orderedProvider = new OrderedListenerProvider();
+
+          $defaultProvider = new AggregateProvider();
+
+          $defaultProvider->addProvider($compiledProvider);
+          $defaultProvider->addProvider($orderedProvider);
+
+          $accessCheckProvider = new AccessCheckProvider();
+
+          $delegatingProvider = new DelegatingProvider($defaultProvider);
+
+          $delegatingProvider->addProvider($accessCheckProvider, [AccessCheck::class]);
+
+          $dispatcher = Dispatcher($delegatingProvider);
+        </code></pre>
+      </section>
+    </section>
 
     <!--
 
@@ -293,8 +762,6 @@
       * Deferring is Listener's job
 
     * Adoption list
-
-
 
     -->
 
