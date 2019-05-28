@@ -27,6 +27,11 @@
     .working-group-list img {
       width: 200px;
     }
+
+    .stronger {
+      font-weight: bold;
+      font-style: italic;
+    }
   </style>
 
 </head>
@@ -68,13 +73,13 @@
       <section>
         <h2>Events in PHP</h2>
         <ol>
-          <li class="fragment">An extension point mechanism</li>
+          <li class="fragment" id="event-definition">An extension point mechanism</li>
           <li class="fragment">Action stream (Event Sourcing)</li>
           <li class="fragment">Asynchronous Loop</li>
           <li class="fragment">User data for a calendar event</li>
           <li class="fragment">This conference</li>
         </ol>
-        <p class="fragment">We only mean the first one</p>
+        <p class="fragment" data-classer="event-definition" data-classer-class="stronger">We only mean the first one</p>
         <aside class="notes">
           <ul>
             <li>If you're here for EventSourcing or Calendaring, you can leave now.</li>
@@ -157,7 +162,7 @@
 
           // or
 
-          $eventmanager->triggerEventUntil(function ($returnValue) {
+          $eventManager->triggerEventUntil(function ($returnValue) {
               if ($returnValue instanceof Payment && $returnValue->paymentReceived()) {
                   return true;
               }
@@ -310,6 +315,11 @@
           <li class="fragment">Composability is your friend</li>
           <li class="fragment">Standardize as little as possible but no less than that</li>
         </ul>
+        <aside class="notes">
+          <ul>
+            <li>Composability: Separation of concerns</li>
+          </ul>
+        </aside>
       </section>
       <section>
         <h2>The spec</h2>
@@ -408,6 +418,7 @@
         <ul>
           <li class="fragment">Explicit priority</li>
           <li class="fragment">Before/after ordering</li>
+          <li class="fragment">Domain-dependent logic</li>
           <li class="fragment">Random</li>
         </ul>
         <p class="fragment">"Listener" is any PHP <code>callable</code></p>
@@ -452,11 +463,18 @@
           // Relative ordering.
           $provider->addListenerBefore($key, 'my_listener_function');
        </code></pre>
+        <p class="fragment">Events map to Listeners by reflection!</p>
+        <aside class="notes">
+          <ul>
+            <li>If type-compatible, match</li>
+            <li>Surprisingly fast</li>
+          </ul>
+        </aside>
       </section>
       <section>
         <h2>Crell/Tukio</h2>
         <pre><code class="php" data-trim data-noescape data-line-numbers>
-          $provider = new OrderedListenerProvider($psr11Container);
+          $provider = new OrderedListenerProvider($PSR_11_Container);
 
           $provider->addListenerService(
             'service_name', 'handlePizza', PizzaArrived::class, 5
@@ -484,29 +502,31 @@
           }
         </code></pre>
         <p class="fragment">(Most of this gets setup in your Container config.)</p>
+        <aside class="notes">
+          <ul>
+            <li>public on* methods auto-registered</li>
+            <li>Manually register any method with custom ordering</li>
+            <li>onPizzaArrived also called for PizzaArrivedLate, if subclass</li>
+          </ul>
+        </aside>
       </section>
       <section>
         <h2>Crell/Tukio</h2>
         <pre><code class="php" data-trim data-noescape data-line-numbers>
           $builder = new ProviderBuilder();
           $builder->addSubscriberService(PizzaSubscriber::class, 'pizza_subscriber');
-          // ...
-
           $compiler = new ProviderCompiler();
 
           // Write the generated compiler out to a file.
           $filename = '/path/to/compiled/code/provider.php';
           $out = fopen($filename, 'w');
-
           $compiler->compile($builder, $out, 'CompiledProvider', 'My\\App');
-
           fclose($out);
         </code></pre>
         <pre class="fragment"><code class="php" data-trim data-noescape data-line-numbers>
           include($filename); // Or autoload it.
 
           $provider = new My\App\CompiledProvider($container);
-
           $dispatcher = new WhateverDispatcher($provider);
         </code></pre>
         <aside class="notes">
@@ -554,10 +574,15 @@
           <li class="fragment">Modify to pass back data</li>
           <li class="fragment">Events are your domain model!</li>
         </ul>
+        <aside class="notes">
+          <ul>
+            <li>Your responsibilty as author to allow only what makes sense for your domain.</li>
+          </ul>
+        </aside>
       </section>
       <section>
-        <h2>Access control</h2>
-        <p>Access permitted iff...</p>
+        <h2>Example: Access control</h2>
+        <p class="fragment">Access permitted iff...</p>
         <ul>
           <li class="fragment"><=1 Listener says Allow</li>
           <li class="fragment">0 Listeners say Deny</li>
@@ -712,7 +737,6 @@
         <h3>Mix and match</h3>
         <pre><code class="php" data-trim data-noescape data-line-numbers>
           $compiledProvider = new MyCompiledProvider();
-
           $orderedProvider = new OrderedListenerProvider();
 
           $defaultProvider = new AggregateProvider();
@@ -728,7 +752,215 @@
 
           $dispatcher = Dispatcher($delegatingProvider);
         </code></pre>
+        <aside class="notes">
+          <ul>
+            <li>All done in your Container config</li>
+            <li>Library can ship own Provider, custom API</li>
+            <li>Stitch them all together cleanly at runtime</li>
+          </ul>
+        </aside>
       </section>
+    </section>
+    <section>
+      <section>
+        <h2>Deferred events</h2>
+        <p><q>This Event will be slow, and I don't care about the result.</q></p>
+        <aside class="notes">
+          <ul>
+            <li>Delayed events</li>
+            <li>Async events</li>
+            <li>Queue events for later</li>
+          </ul>
+        </aside>
+      </section>
+      <section>
+        <p class="oversize">You don't know that.</p>
+        <p class="fragment oversize">Only the Listener author knows what's safe to defer!</p>
+        <aside class="notes">
+          <ul>
+            <li>Library author doesn't know how long listeners will take.</li>
+            <li>Listener author does.</li>
+            <li>Laravel and Node got this right.</li>
+          </ul>
+        </aside>
+      </section>
+      <section>
+        <h2>Example: Queued Events</h2>
+        <p><q>I want to send an email on save</q></p>
+        <pre class="fragment"><code class="php" data-trim data-noescape data-line-numbers>
+          $connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
+          $channel = $connection->channel();
+
+          $channel->queue_declare('doc_notifications', false, false, false, false);
+        </code></pre>
+        <pre class="fragment"><code class="php" data-trim data-noescape data-line-numbers>
+          $provider->addListener(function (DocumentSaved $event) use ($channel) {
+            $details = [
+              'document_id' => $event->getSubject()->id(),
+            ];
+
+            $message = new AMQPMessage(serialize($details));
+            $channel->basic_publish($message, '', 'doc_notifications');
+          });
+        </code></pre>
+        <aside class="notes">
+          <ul>
+            <li>Disclosure: I've never used AMQP...</li>
+            <li>The listener doesn't send an email, its job is to enqueue.</li>
+          </ul>
+        </aside>
+      </section>
+      <section>
+        <h2>Example: Generic queuing</h2>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          class QueueableProvider implements ListenerProviderInterface {
+            protected $listeners = [];
+            protected $container;
+            protected $channel;
+
+            public function __construct(
+                ContainerInterface $container, AMQPChannel $channel = null) {
+              $this->container = $container;
+              $this->channel = $channel;
+              if ($this->channel) {
+                $this->channel->queue_declare('events', false, false, false, false);
+              }
+            }
+            // ...
+          }
+        </code></pre>
+        <aside class="notes">
+          <ul>
+            <li>Listeners must be statically referenceable.</li>
+            <li>Toy version, only handles service callables.</li>
+          </ul>
+        </aside>
+      </section>
+      <section>
+        <h2>Example: Generic queuing</h2>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          public function addListenerService(
+              string $serviceName, string $methodName, string $type, bool $queue): void {
+            if ($queue && $this->channel) {
+              $listener = $this->makeListenerForQueue($serviceName, $methodName);
+            }
+            else {
+              $listener = $this->makeListenerForService($serviceName, $methodName);
+            }
+
+            $this->listeners[] = [
+              'listener' => $listener,
+              'type' => $type,
+            ];
+          }
+        </code></pre>
+      </section>
+      <section>
+        <h2>Example: Generic queuing</h2>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          class QueueableProvider implements ListenerProviderInterface {
+            // ...
+
+            protected function makeListenerForService(
+                string $service, string $method) : callable {
+              $container = $this->container;
+
+              return function (object $event) use ($service, $method, $container) {
+                $container->get($service)->$method($event);
+              };
+            }
+          }
+        </code></pre>
+        <aside class="notes">
+          <ul>
+            <li>The only listener the Dispatcher sees is that anon function</li>
+            <li>Gets even simpler in PHP 7.4 with short closures...</li>
+          </ul>
+        </aside>
+      </section>
+      <section>
+        <h2>Example: Generic queuing</h2>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          protected function makeListenerForQueue(
+              string $service, string $method) : callable {
+            $channel = $this->channel;
+
+            return function (object $event) use ($service, $method, $channel) : void {
+              $details = [
+                'service' => $service,
+                'method'  => $method,
+                'event'   => $event,
+              ];
+
+              $message = AMQPMessage(serialize($details));
+              $channel->basic_publish($message, '', 'events');
+            };
+          }
+        </code></pre>
+        <aside class="notes">
+          <ul>
+            <li>Dispatcher only ever sees two anon functions, over and over</li>
+            <li>That's fine! They're interning the load/queue machinery</li>
+          </ul>
+        </aside>
+      </section>
+            <section>
+        <h2>Example: Generic queuing</h2>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          class QueueableProvider implements ListenerProviderInterface {
+            // ...
+
+            public function getListenersForEvent(object $event): iterable {
+              foreach ($this->listeners as $listener) {
+                if ($event instanceof $listener['type']) {
+                  yield $listener['listener'];
+                }
+              }
+            }
+          }
+        </code></pre>
+        <aside class="notes">
+          <ul>
+            <li>Very generic implementation of getListenersForEvent()</li>
+          </ul>
+        </aside>
+      </section>
+      <section>
+        <h2>Example: Generic queuing</h2>
+        <pre><code class="php" data-trim data-noescape data-line-numbers>
+          function queue_runner(AMQPChannel $channel, ContainerInterface $container) {
+            $worker = function (AMQPMessage $message) use ($container) {
+              $details = unserialize($message->body);
+
+              $listener = $container->get($details['service']->$details['method'];
+              $listener($details['event']));
+            };
+
+            $channel->queue_declare('events', false, false, false, false);
+            $channel->basic_consume('events', '', false, true, false, false, $worker);
+            while (count($channel->callbacks)) {
+              $channel->wait();
+            }
+          }
+        </code></pre>
+        <aside class="notes">
+          <ul>
+            <li>Bottom part is AMQP boilerplate, ignore.</li>
+            <li>Same logic as the immediate-service wrapper, but "later".</li>
+            <li>Is it safe to serialize? Know your API.</li>
+          </ul>
+        </aside>
+      </section>
+    </section>
+    <section>
+      <h2>PSR-14: The Upshot</h2>
+      <ul>
+        <li class="fragment">Library authors have a universal extension target</li>
+        <li class="fragment">Framework authors only need to write Provider</li>
+        <li class="fragment">Off-the-shelf universal Dispatchers and Providers</li>
+        <li class="fragment">Domain-aware Providers are easy</li>
+      </ul>
+      <p class="fragment oversize">Interoperability++</p>
     </section>
 
     <!--
