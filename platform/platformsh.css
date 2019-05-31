@@ -47,7 +47,7 @@ body.skin-blue {
 }
 
 body {
-  background-color: var(--background);
+  background-color: rgb(240, 242, 245);
   font-family: var(--brand-font), Helvetica, sans-serif;
   color: var(--color-text);
 }
@@ -264,14 +264,23 @@ aside {
 
 .reveal code {
   font-family: var(--brand-font-mono), monospace;
+  background: rgb(48, 47, 69);
+  color: #fff;
+  border-radius: 2px;
+}
+.hljs-ln-line .hljs-comment {
+  color: #fff;
+}
+.hljs-ln-line > .hljs-comment {
+  opacity: 0.6;
 }
 
 /* This is for inline code */
 .reveal :not(pre) > code {
-  color: var(--color-code);
-  background-color: var(--color-code-background);
-  padding: 0.1em;
-  border-radius: 3px;
+  color: var(--color-link);
+  background-color: rgba(71, 134, 255, 0.24);
+  padding: 0 8px;
+  border-radius: 2px;
 }
 
 .reveal pre > code {
