@@ -47,7 +47,7 @@ body.skin-blue {
 }
 
 body {
-  background-color: rgb(240, 242, 245);
+  background-color: var(--background);
   font-family: var(--brand-font), Helvetica, sans-serif;
   color: var(--color-text);
 }
