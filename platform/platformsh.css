@@ -131,6 +131,11 @@ body {
   display: inline-block;
   text-align: left;
 }
+.reveal ol ol,
+.reveal dl dl,
+.reveal ul ul {
+  margin-left: 2em;
+}
 
 ul.inline {
   display: flex;
