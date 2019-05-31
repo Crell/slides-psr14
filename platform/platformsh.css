@@ -38,7 +38,7 @@ body.skin-blue {
   --color-text: var(--brand-color-neural-black);
   --color-highlight: var(--brand-color-neural-gray);
   --color-shadow: var(--brand-color-light-blue);
-  --color-code-background: rgb(39, 40, 34);
+  --color-code-background: #3E3D54;
   --color-code: white;
   --color-link: var(--brand-color-primary-blue);
   /* @todo Pink on blue is terrible but I'm not sure what else isn't worse. */
@@ -264,8 +264,8 @@ aside {
 
 .reveal code {
   font-family: var(--brand-font-mono), monospace;
-  background: rgb(48, 47, 69);
-  color: #fff;
+  background-color: var(--color-code-background);
+  color: var(--color-code);
   border-radius: 2px;
 }
 .hljs-ln-line .hljs-comment {
@@ -277,8 +277,8 @@ aside {
 
 /* This is for inline code */
 .reveal :not(pre) > code {
-  color: var(--color-link);
-  background-color: rgba(71, 134, 255, 0.24);
+  color: var(--color-code);
+  background-color: var(--color-code-background);
   padding: 0 8px;
   border-radius: 2px;
 }
