@@ -48,6 +48,7 @@
       <h2>A Major Event in PHP</h2>
     </section>
     <section>
+      <h2>Larry Garfield</h2>
       <h2><a href="https://twitter.com/Crell">@Crell</a></h2>
       <div class="layout-col vcentered">
         <img src="assets/larry-olaf-hug.jpg" alt="Larry implements Huggable" style="width: 350px; margin: 0" />
@@ -932,7 +933,7 @@
             $worker = function (AMQPMessage $message) use ($container) {
               $details = unserialize($message->body);
 
-              $listener = $container->get($details['service']->$details['method'];
+              $listener = $container->get($details['service'])->$details['method'];
               $listener($details['event']));
             };
 
@@ -953,7 +954,8 @@
       </section>
     </section>
     <section>
-      <h2>PSR-14: The Upshot</h2>
+      <h2>PSR-14: tl;ce</h2>
+      <p>(Too long; checked email)</p>
       <ul>
         <li class="fragment">Library authors have a universal extension target</li>
         <li class="fragment">Framework authors only need to write Provider</li>
@@ -961,6 +963,16 @@
         <li class="fragment">Domain-aware Providers are easy</li>
       </ul>
       <p class="fragment oversize">Interoperability++</p>
+    </section>
+    <section>
+      <h2>Further reading</h2>
+      <ul>
+        <li><a href="https://www.php-fig.org/psr/psr-14/">The specification</a></li>
+        <li><a href="https://www.php-fig.org/psr/psr-14/meta/">The meta-document</a></li>
+        <li><a href="https://steemit.com/php/@crell/psr-14-a-major-event-in-php">The book</a></li>
+        <li><a href="https://github.com/crell/tukio">Crell/Tukio</a></li>
+      </ul>
+      <p><code>composer require psr/event-dispatcher</code></p>
     </section>
 
     <!--
