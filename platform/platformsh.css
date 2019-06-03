@@ -269,17 +269,15 @@ aside {
   font-size: 30px;
 }
 
-.reveal code {
+.reveal code,
+code .hljs-class .hljs-title {
   font-family: var(--brand-font-mono), monospace;
   background-color: var(--color-code-background);
   color: var(--color-code);
   border-radius: 2px;
 }
-.hljs-ln-line .hljs-comment {
-  color: #fff;
-}
 .hljs-ln-line > .hljs-comment {
-  opacity: 0.6;
+  opacity: 0.8;
 }
 
 /* This is for inline code */
