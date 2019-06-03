@@ -237,35 +237,35 @@ aside {
 
 /* Pick one of these sizes to change the font size of code */
 
-.reveal pre.font--8 {
+.reveal pre code.font--8 {
   font-size: 8px;
 }
 
-.reveal pre.font--12 {
+.reveal pre code.font--12 {
   font-size: 12px;
 }
 
-.reveal pre.font--14 {
+.reveal pre code.font--14 {
   font-size: 14px;
 }
 
-.reveal pre.font--16 {
+.reveal pre code.font--16 {
   font-size: 16px;
 }
 
-.reveal pre.font--18 {
+.reveal pre code.font--18 {
   font-size: 18px;
 }
 
-.reveal pre.font--20 {
+.reveal pre code.font--20 {
   font-size: 20px;
 }
 
-.reveal pre.font--24 {
+.reveal pre code.font--24 {
   font-size: 24px;
 }
 
-.reveal pre.font--30 {
+.reveal pre code.font--30 {
   font-size: 30px;
 }
 
