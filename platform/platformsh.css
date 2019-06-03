@@ -26,8 +26,8 @@ body.skin-gray {
   --color-text: var(--brand-color-neural-black);
   --color-highlight: var(--brand-color-neural-blue);
   --color-shadow: var(--brand-color-light-blue);
-  --color-code-background: rgb(39, 40, 34);
-  --color-code: white;
+  --color-inline-code-background: var(--brand-color-neural-white);
+  --color-inline-code: var(--brand-color-neural-black);
   --color-link: var(--brand-color-primary-blue);
   --color-quote-mark: var(--brand-color-primary-pink);
   --color-emphasis: var(--brand-color-accent-red);
@@ -38,8 +38,8 @@ body.skin-blue {
   --color-text: var(--brand-color-neural-black);
   --color-highlight: var(--brand-color-neural-gray);
   --color-shadow: var(--brand-color-light-blue);
-  --color-code-background: #ffffff;
-  --color-code: var(--brand-color-neural-black);
+  --color-inline-code-background: var(--brand-color-neural-white);
+  --color-inline-code: var(--brand-color-neural-black);
   --color-link: var(--brand-color-primary-blue);
   /* @todo Pink on blue is terrible but I'm not sure what else isn't worse. */
   --color-quote-mark: var(--brand-color-primary-pink);
@@ -269,21 +269,19 @@ aside {
   font-size: 30px;
 }
 
-.reveal code,
-code .hljs-class .hljs-title {
+.reveal code {
   font-family: var(--brand-font-mono), monospace;
-  background-color: var(--color-code-background);
-  color: var(--color-code);
   border-radius: 2px;
 }
+
 .hljs-ln-line > .hljs-comment {
-  opacity: 0.8;
+  color: var(--color-shadow);
 }
 
 /* This is for inline code */
 .reveal :not(pre) > code {
-  color: var(--color-code);
-  background-color: var(--color-code-background);
+  color: var(--color-inline-code);
+  background-color: var(--color-inline-code-background);
   padding: 0 8px;
   border-radius: 2px;
 }
