@@ -38,8 +38,8 @@ body.skin-blue {
   --color-text: var(--brand-color-neural-black);
   --color-highlight: var(--brand-color-neural-gray);
   --color-shadow: var(--brand-color-light-blue);
-  --color-code-background: var(--brand-color-neural-black);
-  --color-code: white;
+  --color-code-background: #ffffff;
+  --color-code: var(--brand-color-neural-black);
   --color-link: var(--brand-color-primary-blue);
   /* @todo Pink on blue is terrible but I'm not sure what else isn't worse. */
   --color-quote-mark: var(--brand-color-primary-pink);
@@ -465,6 +465,15 @@ blockquote::before {
   font-size: 8rem;
   position: absolute;
   left: -0.4em;
+  top: 2.5rem;
+  z-index: -5;
+}
+blockquote::after {
+  content: '\201D';
+  color: var(--color-quote-mark);
+  font-size: 8rem;
+  position: absolute;
+  right: -0.4em;
   top: 2.5rem;
   z-index: -5;
 }
