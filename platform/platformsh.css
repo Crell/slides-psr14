@@ -38,7 +38,7 @@ body.skin-blue {
   --color-text: var(--brand-color-neural-black);
   --color-highlight: var(--brand-color-neural-gray);
   --color-shadow: var(--brand-color-light-blue);
-  --color-code-background: #3E3D54;
+  --color-code-background: var(--brand-color-neural-black);
   --color-code: white;
   --color-link: var(--brand-color-primary-blue);
   /* @todo Pink on blue is terrible but I'm not sure what else isn't worse. */
