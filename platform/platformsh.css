@@ -3,6 +3,12 @@
 @import url(webfonts/overpass-webfont/overpass.css);
 @import url(webfonts/overpass-mono-webfont/overpass-mono.css);
 
+/* Enable or disable for debugging purposes
+to show where the edge of the slide region is. */
+.reveal .slides {
+  /*border: 1px dotted red;*/
+}
+
 :root {
   --brand-font: "Overpass";
   --brand-font-mono: "Overpass-mono";
@@ -54,10 +60,6 @@ body {
 
 .reveal {
 
-}
-
-.reveal .slides {
-  border: 1px dotted red;
 }
 
 /* The header/footer branding */
