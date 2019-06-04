@@ -29,7 +29,7 @@
     }
 
     .stronger {
-      font-weight: bold;
+      color: var(--color-emphasis);
       font-style: italic;
     }
   </style>
@@ -221,7 +221,8 @@
         <pre>
           As a library author
           I want to target one extension mechanism
-          So that people can use my library with any framework
+          So that people can use my library
+          with any framework
         </pre>
       </section>
       <section>
@@ -407,20 +408,26 @@
       </section>
       <section>
         <h2>Providers</h2>
-        <p>Can map an Event to a Listener based on...</p>
-        <ul>
-          <li class="fragment">its class/interface type</li>
-          <li class="fragment">metadata</li>
-          <li class="fragment">permissions</li>
-          <li class="fragment">day of the week</li>
-        </ul>
-        <p class="fragment">Can order Listeners based on...</p>
-        <ul>
-          <li class="fragment">Explicit priority</li>
-          <li class="fragment">Before/after ordering</li>
-          <li class="fragment">Domain-dependent logic</li>
-          <li class="fragment">Random</li>
-        </ul>
+        <div class="layout-col equal-width">
+          <div>
+            <p>Can map Events to Listeners based on...</p>
+            <ul>
+              <li class="fragment">its class/interface type</li>
+              <li class="fragment">metadata</li>
+              <li class="fragment">permissions</li>
+              <li class="fragment">day of the week</li>
+            </ul>
+          </div>
+          <div>
+            <p class="fragment">Can order Listeners based on...</p>
+            <ul>
+              <li class="fragment">Explicit priority</li>
+              <li class="fragment">Before/after ordering</li>
+              <li class="fragment">Domain-dependent logic</li>
+              <li class="fragment">Random</li>
+            </ul>
+          </div>
+        </div>
         <p class="fragment">"Listener" is any PHP <code>callable</code></p>
         <aside class="notes">
           <ul>
@@ -500,6 +507,8 @@
                 $a = $proxy->addListener('ifPizzaLate', 10);
             }
           }
+
+          $provider->addSubscriber('service_name', MySubscriber::class);
         </code></pre>
         <p class="fragment">(Most of this gets setup in your Container config.)</p>
         <aside class="notes">
@@ -593,25 +602,24 @@
         <h3>The Event</h3>
         <pre><code class="php" data-trim data-noescape data-line-numbers>
           class AccessCheck implements StoppableEventInterface {
-             protected $doc;
-             protected $allow = null;
+            protected $doc;
+            protected $allow = null;
 
-             public function __construct(Document $doc) { $this->doc = $doc; }
-             public function document() : Document { return $this->doc; }
+            public function __construct(Document $doc) { $this->doc = $doc; }
+            public function document() : Document { return $this->doc; }
 
-             public function allow() : void { $this->allow = true; }
-             public function deny() : void { $this->allow = false; }
-             public function allowed() : bool { return $this->allow === true; }
+            public function allow() : void { $this->allow = true; }
+            public function deny() : void { $this->allow = false; }
 
-             public function isPropagationStopped() : bool {
+            public function allowed() : bool {
+              return $this->allow === true;
+            }
+
+            public function isPropagationStopped() : bool {
               return $this->allow === false;
             }
           }
-        </code></pre>
-      </section>
-      <section>
-        <h2>The Event</h2>
-        <pre><code class="php" data-trim data-noescape data-line-numbers>
+
           class CreateAccessCheck extends AccessCheck {}
           class ReadAccessCheck extends AccessCheck {}
           class UpdateAccessCheck extends AccessCheck {}
@@ -648,7 +656,7 @@
         </aside>
       </section>
       <section>
-        <h3>The Listeners</h3>
+        <h3>The caller</h3>
         <pre><code class="php" data-trim data-noescape data-line-numbers>
           $allow = $dispatcher->dispatch(new UpdateAccessCheck($document))->allowed();
           if (!$allow) {
@@ -929,6 +937,7 @@
         <h2>Example: Generic queuing</h2>
         <pre><code class="php" data-trim data-noescape data-line-numbers>
           function queue_runner(AMQPChannel $channel, ContainerInterface $container) {
+
             $worker = function (AMQPMessage $message) use ($container) {
               $details = unserialize($message->body);
 
