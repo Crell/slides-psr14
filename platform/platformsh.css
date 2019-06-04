@@ -306,6 +306,10 @@ aside {
   max-height: 550px;
 }
 
+.reveal .slides pre > code div {
+  line-height: 1.4em;
+}
+
 .reveal pre > div {
   margin-bottom: 0;
 }
