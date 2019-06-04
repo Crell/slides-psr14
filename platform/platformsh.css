@@ -126,9 +126,15 @@ body {
   margin-bottom: 0.8em;
   line-height: 1.3em;
 }
+
+.reveal .slides li {
+  margin-bottom: 0.3em;
+}
+
 .reveal .slides pre code div {
   margin: inherit;
 }
+
 .reveal ol,
 .reveal dl,
 .reveal ul {
