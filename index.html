@@ -263,7 +263,7 @@
           <li><a href="https://twitter.com/auroraeosrose"><img src="assets/working-group/liz.jpg" alt="Elizabeth Smith" /></a><br />Elizabeth Smith</li>
           <li><a href="https://twitter.com/mwop"><img src="assets/working-group/matthew.jpg" alt="Matthew Weier O'Phinney" /></a><br />Matthew Weier O'Phinney</li>
           <li><a href="https://twitter.com/weaverryan"><img src="assets/working-group/ryan.jpg" alt="Ryan Weaver" /></a><br />Ryan Weaver</li>
-          <li><a href="https://twitter.com/"><img src="assets/working-group/benni.png" alt="Benni Mack" /></a><br />Benni Mack</li>
+          <li><a href="https://twitter.com/bennimack"><img src="assets/working-group/benni.png" alt="Benni Mack" /></a><br />Benni Mack</li>
         </ul>
       </section>
       <section>
@@ -392,6 +392,7 @@
             }
           }
         </code></pre>
+        <p class="fragment">("Unstoppable Events" is my new band name...)</p>
         <aside class="notes">
           <ul>
             <li>Most dispatchers like this, plus logging</li>
@@ -400,7 +401,6 @@
             <li>Stoppable events relevant to dispatcher. Opt-in.</li>
           </ul>
         </aside>
-        <p class="fragment">("Unstoppable Events" is my new band name...)</p>
       </section>
       <section>
         <p class="oversize">Dispatchers are the API to calling libraries</p>
@@ -567,10 +567,10 @@
         <p class="oversize">Or write your own</p>
         <p class="oversize fragment">Or use your framework's</p>
         <ul class="fragment">
-          <li>Symfony 4.3</li>
+          <li>Symfony 4.3+</li>
           <li>Laminas (Zend Framework)</li>
           <li>Yii 3.0</li>
-          <li>TYPO3</li>
+          <li>TYPO3 10.0</li>
         </ul>
         <p class="fragment">(If yours isn't here, feature request time!)</p>
       </section>
@@ -585,7 +585,7 @@
         </ul>
         <aside class="notes">
           <ul>
-            <li>Your responsibilty as author to allow only what makes sense for your domain.</li>
+            <li>Your responsibility as author to allow only what makes sense for your domain.</li>
           </ul>
         </aside>
       </section>
@@ -593,9 +593,9 @@
         <h2>Example: Access control</h2>
         <p class="fragment">Access permitted iff...</p>
         <ul>
-          <li class="fragment"><=1 Listener says Allow</li>
+          <li class="fragment">&gt;=1 Listener says Allow</li>
           <li class="fragment">0 Listeners say Deny</li>
-          <li class="fragment">Listers can say "don't care"</li>
+          <li class="fragment">Listeners can say "don't care"</li>
         </ul>
       </section>
       <section>
@@ -912,7 +912,7 @@
           </ul>
         </aside>
       </section>
-            <section>
+      <section>
         <h2>Example: Generic queuing</h2>
         <pre><code class="php" data-trim data-noescape data-line-numbers>
           class QueueableProvider implements ListenerProviderInterface {
