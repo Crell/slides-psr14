@@ -50,11 +50,11 @@
       <h2>Larry Garfield</h2>
       <h2><a href="https://twitter.com/Crell">@Crell</a></h2>
       <div class="layout-col vcentered">
-        <img src="assets/larry-olaf-hug.jpg" alt="Larry implements Huggable" style="width: 350px; margin: 0" />
+        <a href="https://leanpub.com/thinking-functionally-in-php"><img src="assets/thinking-functionally.png" alt="Larry implements Huggable" style="width: 350px; margin: 0" /></a>
         <ul style="text-wrap: none">
           <li>Director of DX, <a href="http://www.platform.sh/">Platform.sh</a></li>
           <li style="margin-top: 1em;">PHP-FIG Core Committee</li>
-          <li style="margin-top: 1em;"><code>implements Huggable</code></li>
+          <li style="margin-top: 1em;">Author, <a href="https://leanpub.com/thinking-functionally-in-php"><em>Thinking Functionally in PHP</em></a></li>
         </ul>
       </div>
     </section>
@@ -479,7 +479,7 @@
         </aside>
       </section>
       <section>
-        <h2>Crell/Tukio</h2>
+        <h2>Crell/Tukio: Services</h2>
         <pre><code class="php" data-trim data-noescape data-line-numbers>
           $provider = new OrderedListenerProvider($PSR_11_Container);
 
@@ -491,15 +491,18 @@
         </code></pre>
       </section>
       <section>
-        <h2>Crell/Tukio</h2>
+        <h2>Crell/Tukio: Subscribers</h2>
         <pre><code class="php" data-trim data-noescape data-line-numbers>
           class MySubscriber implements SubscriberInterface {
 
             // This method will become a Listener for PizzaArrived.
-            public function onPizzaArrived(PizzaArrived $event) : void { /* ... */}
+            public function onPizzaArrived(PizzaArrived $event) : void { /*...*/ }
+
+            #[ListenerPriority(10)]
+            public function ifPizzaWrong(WrongPizzaDelivered $event) : void { /*...*/ }
 
             // This method is registered explicitly below.
-            public function ifPizzaLate(PizzaArrivedLate $event) : void { /* ... */}
+            public function ifPizzaLate(PizzaArrivedLate $event) : void { /*...*/ }
 
             public static function registerListeners(ListenerProxy $proxy): void
             {
@@ -515,12 +518,13 @@
           <ul>
             <li>public on* methods auto-registered</li>
             <li>Manually register any method with custom ordering</li>
+            <li>Attribute-based registration</li>
             <li>onPizzaArrived also called for PizzaArrivedLate, if subclass</li>
           </ul>
         </aside>
       </section>
       <section>
-        <h2>Crell/Tukio</h2>
+        <h2>Crell/Tukio: Compiled</h2>
         <pre><code class="php" data-trim data-noescape data-line-numbers>
           $builder = new ProviderBuilder();
           $builder->addSubscriberService(PizzaSubscriber::class, 'pizza_subscriber');
@@ -571,12 +575,13 @@
           <li>Laminas (Zend Framework)</li>
           <li>Yii 3.0</li>
           <li>TYPO3 10.0</li>
+          <li>Sulu</li>
         </ul>
         <p class="fragment">(If yours isn't here, feature request time!)</p>
-        <p class="fragment oversize" style="margin-top: 1em;">Packagist:  600 510 Installs, 153 Dependents</p>
+        <p class="fragment oversize" style="margin-top: 1em;">Packagist:  22,444,705 Installs, 306 Dependents</p>
         <aside class="notes">
           <ul>
-            <li>Packgist accurate as of 23 January 2020</li>
+            <li>Packgist accurate as of 7 December 2020</li>
           </ul>
         </aside>
       </section>
@@ -644,6 +649,7 @@
                  $event->deny();
              }
           });
+
           // Note specific class.
           $provider->addListener(function (UpdateAccessCheck $event) use ($user) {
              $isOwnDocument = $event->document()->owner() == $user->id();
@@ -829,13 +835,11 @@
         <pre><code class="php" data-trim data-noescape data-line-numbers>
           class QueueableProvider implements ListenerProviderInterface {
             protected $listeners = [];
-            protected $container;
-            protected $channel;
 
             public function __construct(
-                ContainerInterface $container, AMQPChannel $channel = null) {
-              $this->container = $container;
-              $this->channel = $channel;
+                protected ContainerInterface $container,
+                protected AMQPChannel $channel = null,
+            ) {
               if ($this->channel) {
                 $this->channel->queue_declare('events', false, false, false, false);
               }
@@ -845,6 +849,7 @@
         </code></pre>
         <aside class="notes">
           <ul>
+            <li>PHP 8 Constructor Promotion syntax!</li>
             <li>Listeners must be statically referenceable.</li>
             <li>Toy version, only handles service callables.</li>
           </ul>
@@ -854,12 +859,13 @@
         <h2>Example: Generic queuing</h2>
         <pre><code class="php" data-trim data-noescape data-line-numbers>
           public function addListenerService(
-              string $serviceName, string $methodName, string $type, bool $queue): void {
+              string $service, string $method, string $type, bool $queue): void {
+
             if ($queue && $this->channel) {
-              $listener = $this->makeListenerForQueue($serviceName, $methodName);
+              $listener = $this->makeListenerForQueue($service, $method);
             }
             else {
-              $listener = $this->makeListenerForService($serviceName, $methodName);
+              $listener = $this->makeListenerForService($service, $method);
             }
 
             $this->listeners[] = [
@@ -876,19 +882,18 @@
             // ...
 
             protected function makeListenerForService(
-                string $service, string $method) : callable {
+              string $service,
+              string $method,
+            ) : callable {
               $container = $this->container;
 
-              return function (object $event) use ($service, $method, $container) {
-                $container->get($service)->$method($event);
-              };
+              return fn(object $event) => $container->get($service)->$method($event);
             }
           }
         </code></pre>
         <aside class="notes">
           <ul>
             <li>The only listener the Dispatcher sees is that anon function</li>
-            <li>Gets even simpler in PHP 7.4 with short closures...</li>
           </ul>
         </aside>
       </section>
@@ -980,56 +985,38 @@
     </section>
     <section>
       <h2>Further reading</h2>
-      <ul>
-        <li><a href="https://www.php-fig.org/psr/psr-14/">The specification</a></li>
-        <li><a href="https://www.php-fig.org/psr/psr-14/meta/">The meta-document</a></li>
-        <li><a href="https://steemit.com/php/@crell/psr-14-a-major-event-in-php">The book</a></li>
-        <li><a href="https://github.com/crell/tukio">Crell/Tukio</a></li>
-      </ul>
-      <p><code>composer require psr/event-dispatcher</code></p>
+      <div class="layout-stacked" style="height: 500px;">
+        <div>
+          <ul>
+            <li><a href="https://www.php-fig.org/psr/psr-14/">The specification</a></li>
+            <li><a href="https://www.php-fig.org/psr/psr-14/meta/">The meta-document</a></li>
+            <li><a href="https://github.com/crell/tukio">Crell/Tukio</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Get the free book!</h3>
+          <p><a href="https://leanpub.com/major-event-in-php">https://leanpub.com/major-event-in-php</a></p>
+          <p>(Or donate to support <a href="https://osmihelp.org">OSMI</a>.)</p>
+        </div>
+        <p><code>composer require psr/event-dispatcher</code></p>
+      </div>
     </section>
 
-    <!--
-
-    * What is an event?
-    * Status quo
-      * Symfony
-      * League/Event
-      * Laravel
-      * ZF/Laminas
-      * Drupal hooks
-      * WordPress hooks
-      * TYPO3 hooks
-      * If writing a free-standing library, now what?
-
-    * Let's fix it.
-
-    * PHP-FIG
-    * PSR-14 WG
-      * Goals
-      * Non-Goals
-
-    * PSR-14 design.
-      * The 4 use cases
-      * Show the interfaces
-      * Key point: No event label.
-      * Key point: Separate Dispatcher/Provider
-
-    * Examples (borrow from blog series)
-      * Basics
-      * Deferring is Listener's job
-
-    * Adoption list
-
-    -->
-
-
     <section id="final">
-      <h2>Larry Garfield</h2>
-      <h2><a href="http://twitter.com/Crell">@Crell</a></h2>
-      <p>Director of Developer Experience <a href="http://www.platform.sh/">Platform.sh</a></p>
-      <p>Idea to Cloud Hosting</p>
-      <p>Stalk us at <a href="http://twitter.com/Platformsh">@PlatformSH</a></p>
+      <div class="layout-col">
+        <div>
+          <h2>Larry Garfield</h2>
+          <h2><a href="http://twitter.com/Crell">@Crell</a></h2>
+          <p>Director of Developer Experience <a href="http://www.platform.sh/">Platform.sh</a></p>
+          <p>The end-to-end web platform for agile teams</p>
+          <p>Stalk us at <a href="http://twitter.com/Platformsh">@PlatformSH</a></p>
+        </div>
+        <div>
+          <h2>Buy my book!</h2>
+          <p><a href="https://bit.ly/fn-php">https://bit.ly/fn-php</a></p>
+          <p><a href="https://bit.ly/fn-php"><img src="assets/thinking-functionally.png" width="175px;" alt="Cover of Thinking Functionally in PHP" /></a></p>
+        </div>
+      </div>
     </section>
 	</div>
 </div>
