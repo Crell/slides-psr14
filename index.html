@@ -236,8 +236,8 @@
     </section>
     <section>
       <h2>Enter stage left</h2>
-      <div class="layout-col equal-width">
-        <div>
+      <div class="layout-col">
+        <div style="padding: 3em;">
           <img src="assets/php-fig-ossart.jpg" alt="Ninjagrl offering a FIG to a turtle" />
           <p class="credit">Bec Simensen, <a href="https://ninjagrl.com/artwork/fig">https://ninjagrl.com/artwork/fig</a></p>
         </div>
@@ -583,10 +583,10 @@
           <li>Sulu</li>
         </ul>
         <p class="fragment">(If yours isn't here, feature request time!)</p>
-        <p class="fragment oversize" style="margin-top: 1em;">Packagist:  22,444,705 Installs, 306 Dependents</p>
+        <p class="fragment oversize" style="margin-top: 1em;">Packagist:  41,127,008  Installs, 349 Dependents</p>
         <aside class="notes">
           <ul>
-            <li>Packgist accurate as of 7 December 2020</li>
+            <li>Packgist accurate as of 21 April 2021</li>
           </ul>
         </aside>
       </section>
@@ -618,20 +618,20 @@
         <h3>The Event</h3>
         <pre><code class="php" data-trim data-noescape data-line-numbers>
           class AccessCheck implements StoppableEventInterface {
-            protected $doc;
-            protected $allow = null;
+            protected Document $doc;
+            protected ?bool $allow = null;
 
             public function __construct(Document $doc) { $this->doc = $doc; }
-            public function document() : Document { return $this->doc; }
+            public function document(): Document { return $this->doc; }
 
-            public function allow() : void { $this->allow = true; }
-            public function deny() : void { $this->allow = false; }
+            public function allow(): void { $this->allow = true; }
+            public function deny(): void { $this->allow = false; }
 
-            public function allowed() : bool {
+            public function allowed(): bool {
               return $this->allow === true;
             }
 
-            public function isPropagationStopped() : bool {
+            public function isPropagationStopped(): bool {
               return $this->allow === false;
             }
           }
@@ -698,7 +698,7 @@
 
              public function addVoter(callable $voter, bool $canDeny = false) { ... }
 
-             public function getListenersForEvent(object $event) : iterable { ... }
+             public function getListenersForEvent(object $event): iterable { ... }
           }
         </code></pre>
         <p class="fragment"><q>Does that mean I need multiple dispatchers?</q></p>
@@ -718,7 +718,7 @@
           class AggregateProvider implements ListenerProviderInterface {
             // ...
 
-            public function addProvider(ListenerProviderInterface $p) : void {
+            public function addProvider(ListenerProviderInterface $p): void {
               $this->providers[] = $provider;
             }
 
@@ -1000,7 +1000,7 @@
         </div>
         <div>
           <h3>Get the free book!</h3>
-          <p><a href="https://leanpub.com/major-event-in-php">https://leanpub.com/major-event-in-php</a></p>
+          <p><a href="https://bit.ly/psr14-book">https://bit.ly/psr14-book</a></p>
           <p>(Or donate to support <a href="https://osmihelp.org">OSMI</a>.)</p>
         </div>
         <p><code>composer require psr/event-dispatcher</code></p>
